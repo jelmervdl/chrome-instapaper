@@ -1,0 +1,17 @@
+{
+	"name": "Instapaper New Tab Page",
+	"version": "1.0",
+	"permissions": [
+		"http://www.instapaper.com/*"
+	],
+	"background_page": "background.html",
+	"content_scripts": [
+		{
+			"matches": ["http://www.instapaper.com/*"],
+			"js": ["content.js"]
+		}
+	],
+	"chrome_url_overrides" : {
+    	"newtab": "newtab.html"
+  	}
+}

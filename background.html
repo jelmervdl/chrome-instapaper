@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+	<script>
+	chrome.extension.onRequest.addListener(function(request, sender, respond) {
+		if (!request.key)
+			return;
+
+		if (request.value)
+			localStorage[request.key] = request.value;
+
+		respond(localStorage[request.key]);
+	});
+	</script>
+</html>

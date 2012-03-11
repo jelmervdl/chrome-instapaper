@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>New Tab</title>
+		<style>
+		body {
+			background-color: #f4f4f4;
+			font: 1.2em/1.8em Helvetica;
+			color: #ccc;
+			padding: 6em;
+		}
+
+		a {
+			color: #ccc;
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: #333;
+		}
+
+		.instructions {
+			display: none;
+			text-align: center;
+		}
+
+		.instructions a {
+			color: #333;
+		}
+
+		.setup .instructions {
+			display: block;
+		}
+
+		.setup #reading-list {
+			display: none;
+		}
+
+		</style>
+	</head>
+	<body>
+		<ol id="reading-list"></ol>
+		<p class="instructions">Go to <a href="http://instapaper.com">instapaper.com</a></p>
+		<script>
+			function updateReadingList(feedURL)
+			{
+				var request = new XMLHttpRequest();
+				request.open('GET', feedURL, true);
+				request.overrideMimeType('text/xml');
+				request.send();
+				request.onreadystatechange = function() {
+					if (request.readyState == 4 && request.status == 200)
+					{
+						var readingList = parseReadingList(request.responseXML);
+
+						if (!readingList)
+							return;
+
+						loadReadingList(readingList);
+						localStorage['readingList'] = JSON.stringify(readingList);
+					}
+				}
+			}
+
+			function parseReadingList(root)
+			{
+				var readingList = [];
+
+				Array.prototype.forEach.call(root.getElementsByTagName('item'), function(item) {
+					readingList.push({
+						'title': item.querySelector('title').firstChild.nodeValue.trim(),
+						'link': item.querySelector('link').firstChild.nodeValue.trim()
+					});
+				});
+
+				return readingList;
+			}
+
+			function loadReadingList(items)
+			{
+				var ol = document.getElementById('reading-list');
+
+				// Clean reading list
+				while (ol.firstChild)
+					ol.removeChild(ol.firstChild);
+
+				items.forEach(function(item) {
+					var li = document.createElement('li'),
+						a = document.createElement('a'),
+						title = document.createTextNode(item.title);
+
+					ol.appendChild(li);
+
+					li.appendChild(a);
+
+					a.appendChild(title);
+					a.href = item.link;
+				});
+			}
+
+			if (localStorage['readingList'])
+				loadReadingList(JSON.parse(localStorage['readingList']));
+
+			chrome.extension.sendRequest({key: 'feedURL'}, function(feedURL) {
+				if (feedURL)
+					updateReadingList(feedURL);
+				else
+					document.body.classList.add('setup');
+			});
+
+		</script>
+	</body>
+</html>
